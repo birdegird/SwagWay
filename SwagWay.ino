@@ -209,7 +209,7 @@ void motorControl(double out)
 
   velocity = velocity * velocity;
 
-  if (center) velocity = 255;
+  if (center && velocity > 0) velocity = 255;
   if (velocity > 255) velocity = 255;
 
   byte velocityOut = abs(velocity);
