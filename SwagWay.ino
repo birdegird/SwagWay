@@ -15,9 +15,9 @@
 
 MPU6050 mpu;
 
-#define OUTPUT_READABLE_YAWPITCHROLL
+//#define OUTPUT_READABLE_YAWPITCHROLL
 #define OUTPUT_READABLE_MOTOR
-#define OUTPUT_TEAPOT
+//#define OUTPUT_TEAPOT
 
 #define INTERRUPT_PIN 2
 #define LED_PIN 13
@@ -63,6 +63,7 @@ float initialYaw = 0.0;
 float initialPitch = 0.0;
 float initialRoll = 0.0;
 
+bool center = false;
 
 void initMotors()
 {
@@ -161,25 +162,29 @@ void setup()
 void motorControl(double out)
 {
   // forward
-  if (out > 1)
+  if (out > 2)
   {
     digitalWrite(IN1, LOW);
     digitalWrite(IN2, HIGH);
     digitalWrite(IN3, LOW);
     digitalWrite(IN4, HIGH);
 
+    center = false;
+
 #ifdef OUTPUT_READABLE_MOTOR
     Serial.print("Forward: ");
 #endif
   }
   // backward
-  else if (out < -1)
+  else if (out < -2)
   {
     digitalWrite(IN1, HIGH);
     digitalWrite(IN2, LOW);
     digitalWrite(IN3, HIGH);
     digitalWrite(IN4, LOW);
 
+    center = false;
+    
 #ifdef OUTPUT_READABLE_MOTOR
     Serial.print("Backward: ");
 #endif
@@ -191,21 +196,23 @@ void motorControl(double out)
     digitalWrite(IN3, HIGH);
     digitalWrite(IN4, HIGH);
 
+    center = true;
+    
 #ifdef OUTPUT_READABLE_MOTOR
     Serial.print("Center: ");
 #endif
   }
 
-  int velocity = abs(out) / 2;
+  int velocity = abs(out);
 
-  if (velocity <= 0)   velocity = 0;
+  if (velocity < 0) velocity = 0;
 
   velocity = velocity * velocity;
 
-  if (velocity >= 255) velocity = 255;
+  if (center) velocity = 255;
+  if (velocity > 255) velocity = 255;
 
   byte velocityOut = abs(velocity);
-
 
   analogWrite(ENA, velocityOut);
   analogWrite(ENB, velocityOut);
