@@ -37,7 +37,6 @@ uint8_t fifoBuffer[64];
 
 Quaternion rotation;
 VectorFloat gravity;
-float euler[3];
 float ypr[3];
 
 
@@ -58,6 +57,8 @@ void setup()
   Wire.setClock(400000);
 
   Serial.begin(115200);
+  
+  Serial.println(F("SwagWay v0.0.1"));
 
   if (initMPU())
   {
@@ -65,6 +66,12 @@ void setup()
     sensorThread->setInterval(5);
     
     mainThread.add(sensorThread);
+  }
+  else
+  {
+    Serial.println(F("No MPU6050 found!"));
+
+    return;
   }
 
   if (initL298N())
@@ -99,13 +106,6 @@ void outputCallback()
   
   Serial.println();
   
-  /*Serial.print(F("Euler\t"));
-  Serial.print(euler[0] * 180 / M_PI);
-  Serial.print(F("\t"));
-  Serial.print(euler[1] * 180 / M_PI);
-  Serial.print(F("\t"));
-  Serial.println(euler[2] * 180 / M_PI);*/
-
   Serial.print(F("YPR\t"));
   Serial.print(ypr[0] * 180 / M_PI);
   Serial.print(F("\t"));
@@ -142,9 +142,6 @@ void outputCallback()
   Serial.print(target[1] * 180 / M_PI);
   Serial.print(F("\t"));
   Serial.println(target[2] * 180 / M_PI);
-
-  //Serial.println(motorRegister[0]);
-  //Serial.println(motorRegister[1]);
 }
 
 
@@ -167,7 +164,6 @@ void sensorCallback()
     fifoCount -= packetSize;
 
     mpu.dmpGetQuaternion(&rotation, fifoBuffer);
-    mpu.dmpGetEuler(euler, &rotation);
     mpu.dmpGetGravity(&gravity, &rotation);
     mpu.dmpGetYawPitchRoll(ypr, &rotation, &gravity);
   }
